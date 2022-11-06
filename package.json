@@ -1,6 +1,6 @@
 {
   "name": "ballr_api",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Up-to-date nba team & player stats.",
   "main": "./build/server.js",
   "scripts": {
