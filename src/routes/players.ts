@@ -4,7 +4,7 @@ const router = Router();
 
 router.get("/", async (req: Request, res: Response) => {
 	let result = await getAllDBItems();
-	res.json(result?.allTeams);
+	res.json(result?.allPlayers);
 });
 
 module.exports = router;
