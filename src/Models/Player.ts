@@ -20,9 +20,9 @@ const playerSchema = new Schema<IPlayer>({
 	threePointsMade: { type: String },
 	threePointsAttempted: { type: String },
 	threePointPercentage: { type: String },
-	freethrowsMade: { type: String, required: true },
-	freeThrowsAttempted: { type: String, required: true },
-	freeThrowPercentage: { type: String, required: true },
+	freethrowsMade: { type: String },
+	freeThrowsAttempted: { type: String },
+	freeThrowPercentage: { type: String },
 	offRebounds: { type: String },
 	defRebounds: { type: String },
 	rebounds: { type: String },
@@ -31,10 +31,10 @@ const playerSchema = new Schema<IPlayer>({
 	steals: { type: String },
 	blocks: { type: String },
 	personalFouls: { type: String },
-	fantasyPoints: { type: String, required: true },
-	doubleDoubles: { type: String, required: true },
-	tripleDoubles: { type: String, required: true },
-	plusMinus: { type: String, required: true },
+	fantasyPoints: { type: String },
+	doubleDoubles: { type: String },
+	tripleDoubles: { type: String },
+	plusMinus: { type: String },
 });
 
 // 3. Create a Model.

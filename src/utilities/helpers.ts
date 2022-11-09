@@ -19,7 +19,7 @@ export function pushTeamsToDb() {
 
 export function pushPlayersToDb() {
 	fs.readFile(
-		path.resolve(__dirname, "../completePlayerStats1.json"),
+		path.resolve(__dirname, "../completePlayerStats09_11_2022.json"),
 		"utf8",
 		async (error, data) => {
 			let players: [IPlayer] = JSON.parse(data);
@@ -28,4 +28,68 @@ export function pushPlayersToDb() {
 			}
 		}
 	);
+}
+
+//
+// DATABASE SORT FUNCTIONS
+
+export function nameSortFunction(a: IPlayer, b: IPlayer): number {
+	if (a.name < b.name) {
+		return -1;
+	} else {
+		return 1;
+	}
+}
+
+export function teamSortFunction(a: IPlayer, b: IPlayer): number {
+	// ASCENDING ORDER
+	if (a.team < b.team) {
+		return -1;
+	} else {
+		return 1;
+	}
+}
+
+export function winSortFunction(a: IPlayer, b: IPlayer): number {
+	return +b.wins - +a.wins;
+}
+
+export function lossSortFunction(a: IPlayer, b: IPlayer): number {
+	if (+a.losses < +b.losses) {
+		return 1;
+	} else {
+		return -1;
+	}
+}
+
+export function assistSortFunction(a: IPlayer, b: IPlayer): number {
+	if (+b.assists < +a.assists) {
+		return -1;
+	} else {
+		return 1;
+	}
+}
+
+export function blockSortFunction(a: IPlayer, b: IPlayer): number {
+	if (+a.blocks < +b.blocks) {
+		return 1;
+	} else {
+		return -1;
+	}
+}
+
+export function reboundSortFunction(a: IPlayer, b: IPlayer): number {
+	if (+a.rebounds < +b.rebounds) {
+		return 1;
+	} else {
+		return -1;
+	}
+}
+
+export function threePointsMadeSortFunction(a: IPlayer, b: IPlayer): number {
+	return +b.threePointsMade - +a.threePointsMade;
+}
+
+export function pointSortFunction(a: IPlayer, b: IPlayer): number {
+	return +b.points - +a.points;
 }

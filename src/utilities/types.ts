@@ -10,4 +10,4 @@ export type PlayerResponseDataType = {
 
 export type TeamOrPlayerArray = [ITeam | IPlayer];
 export type TeamOrPlayerType = ITeam | IPlayer;
-export type TeamOrPlayerString = "team" | "player";
+export type SortOperatorType = "team" | "player";

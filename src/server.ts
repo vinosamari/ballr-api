@@ -14,16 +14,35 @@ app.use("/players", players);
 
 app.get("/", (req: Request, res: Response) => {
 	let allRoutes = {
+		//
+		// TEAM ROUTES
 		"teams/": "LIST ALL TEAMS IN THE LEAGUE",
-		"teams/:id": "GET INFO FOR TEAM WITH ID=id",
-		"teams/:id/schedule": "GET MATCHUP INFO FOR TEAM WITH ID=id",
-		"teams/:id/roster": "GET ALL PLAYERS FOR A TEAM WITH ID=id",
+		"teams/?name=<teamName>": "GET TEAM WITH NAME=teamName e.g 'Atlanta Hawks'",
+		"teams/?name=<teamName>/schedule":
+			"GET GAMES CALENDAR FOR TEAM WITH NAME=teamName e.g 'Boston Celtics'",
+		"teams/?wins=<numberOfWins>":
+			"GET TEAM OR TEAMS WITH WINS=numberOfWins e.g '4'",
+		"teams/?losses=<numberOfLosses>":
+			"GET TEAM OR TEAMS WITH WINS=numberOfLosses e.g '1'",
+		"teams/?name=<teamName>/roster":
+			"GET ALL PLAYERS FOR A TEAM WITH NAME=teamName e.g 'Brooklyn Nets'",
+		"teams/?short=<teamShort>/roster":
+			"GET ALL PLAYERS FOR A TEAM WITH SHORT_NAME=teamShort e.g 'BKN'",
+		"teams/topten": "LIST THE TOP TEN TEAMS IN THE LEAGUE",
+		"teams/topten/?filter=<teamStats>":
+			"LIST THE TOP TEN TEAMS IN THE LEAGUE ORDERED BY teamStats. e.g 'wins, losses'",
+		//
+		// PLAYER ROUTES
 		"players/": "GET ALL PLAYERS IN THE LEAGUE",
-		"players/topfifty": "GET THE TOP 50 PLAYERS IN THE LEAGUE",
-		"players/:id": "GET A PLAYER WITH ID=id",
-		"schedule/": "GET MATCHUPS FOR THE FOLLOWING WEEK (INCLUDING TODAY)",
-		"topten/players": "LIST TOP TEN PLAYERS",
-		"topten/teams": "LIST TOP TEN TEAMS",
+		"players/?name=<playerName>": "GET A PLAYER WITH NAME=playerName",
+		"players/?age=<playerAge>": "GET A PLAYER (OR PLAYERS) WITH AGE=playerAge",
+		"players/?team=<playerTeam>":
+			"GET A PLAYER (OR PLAYERS) WITH TEAM=playerTeam",
+		"players/topten": "LIST THE TOP TEN PLAYERS IN THE LEAGUE",
+		"players/topten/?filter=<playerStats>":
+			"LIST THE TOP TEN PLAYERS IN THE LEAGUE ORDERED BY playerStats. e.g 'wins, losses'",
+		"players/topfifty": "LIST THE TOP FIFTY PLAYERS IN THE LEAGUE",
+		"schedule/": "GET LEAGUE MATCHUPS FOR THE FOLLOWING WEEK (INCLUDING TODAY)",
 	};
 	res.json(allRoutes);
 });
