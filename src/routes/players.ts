@@ -6,17 +6,21 @@ import {
 	threePointsMadeSortFunction,
 	blockSortFunction,
 	reboundSortFunction,
-	assistSortFunction,
+	assistsSortFunction,
 	nameSortFunction,
 	teamSortFunction,
+	ageSortFunction,
 } from "../utilities/helpers";
 import { IPlayer } from "../utilities/interfaces";
 import { getAllDBItems } from "../utilities/db";
+import { WithId, Document } from "mongodb";
 const router = Router();
 
+//
+// GET ALL PLAYERS
 router.get("/", async (req: Request, res: Response) => {
 	const ERROR_MESSAGE = {
-		// #TODO ADD AN ENUM FOR STATUS MESSAGES
+		// #TODO ADD AN ENUM FOR STATUS MESSAGES AND TEAM NAMES
 		status: "ERROR",
 		message: "No matching records were found in the database.",
 	};
@@ -24,10 +28,191 @@ router.get("/", async (req: Request, res: Response) => {
 	let dbPlayers = dbItems?.allPlayers;
 
 	//
-	// QUERY BY NAME
-	if (req.query.name) {
+	// QUERY FILTERS
+	//
+	// FILTER AND SORT
+	// QUERY BY NAME AND SORT BY GIVEN SORT PARAM
+	if (req.query.sort && req.query.name) {
+		let sortParam = req.query.sort as string;
+		let nameParam = req.query.name as string;
+		// FILTER BY NAME
+		let result = dbPlayers?.filter((player: IPlayer | WithId<Document>) => {
+			return player.name.toLowerCase().includes(nameParam.toLowerCase());
+		});
+		//
+		// SORT FILTERED RESULT
+		switch (sortParam) {
+			case "age":
+			case "AGE":
+				result?.sort(ageSortFunction);
+				break;
+			case "wins":
+			case "WINS":
+			case "Wins":
+				result?.sort(winSortFunction);
+				break;
+			case "TEAM":
+			case "team":
+				result?.sort(teamSortFunction);
+				break;
+			case "ASSISTS":
+			case "assists":
+				result?.sort(assistsSortFunction);
+				break;
+			case "REBOUNDS":
+			case "rebounds":
+				result?.sort(reboundSortFunction);
+				break;
+			case "blocks":
+			case "BLOCKS":
+				result?.sort(blockSortFunction);
+				break;
+			case "LOSS":
+			case "loss":
+			case "losses":
+			case "Losses":
+			case "Loss":
+				result?.sort(lossSortFunction);
+				break;
+			case "3pts":
+			case "3 points":
+			case "3points":
+			case "Three Points":
+			case "threePoints":
+				result?.sort(threePointsMadeSortFunction);
+				break;
+
+			default:
+				break;
+		}
+		// ERROR CHECK
+		if (result == undefined) {
+			res.status(404).json(ERROR_MESSAGE);
+		}
+		// RETURN SORTED RESULTS
+		res.status(200).json(result);
+	} else if (req.query.sort && req.query.age) {
+		let sortParam = req.query.sort as string;
+		let ageParam = req.query.age as string;
+		// FILTER BY NAME
+		let result = dbPlayers?.filter((player: WithId<Document>) => {
+			return parseInt(player.age) === parseInt(ageParam);
+		});
+		//
+		// SORT FILTERED RESULT
+		switch (sortParam) {
+			case "wins":
+			case "WINS":
+			case "Wins":
+				result?.sort(winSortFunction);
+				break;
+			case "TEAM":
+			case "team":
+				result?.sort(teamSortFunction);
+				break;
+			case "ASSISTS":
+			case "assists":
+				result?.sort(assistsSortFunction);
+				break;
+			case "REBOUNDS":
+			case "rebounds":
+				result?.sort(reboundSortFunction);
+				break;
+			case "blocks":
+			case "BLOCKS":
+				result?.sort(blockSortFunction);
+				break;
+			case "LOSS":
+			case "loss":
+			case "losses":
+			case "Losses":
+			case "Loss":
+				result?.sort(lossSortFunction);
+				break;
+			case "3pts":
+			case "3 points":
+			case "3points":
+			case "Three Points":
+			case "threePoints":
+				result?.sort(threePointsMadeSortFunction);
+				break;
+
+			default:
+				break;
+		}
+		// ERROR CHECK
+		if (result == undefined) {
+			res.status(404).json(ERROR_MESSAGE);
+		}
+		// RETURN SORTED RESULTS
+		res.status(200).json(result);
+	} else if (req.query.sort && req.query.team) {
+		let sortParam = req.query.sort as string;
+		let teamParam = req.query.team as string;
+		// FILTER BY NAME
+		let result = dbPlayers?.filter((player: WithId<Document> | IPlayer) => {
+			return player.team?.toLowerCase() == teamParam.toLowerCase();
+		});
+		//
+		// SORT FILTERED RESULT
+		switch (sortParam) {
+			case "age":
+			case "AGE":
+				result?.sort(ageSortFunction);
+				break;
+			case "wins":
+			case "WINS":
+			case "Wins":
+				result?.sort(winSortFunction);
+				break;
+			case "TEAM":
+			case "team":
+				result?.sort(teamSortFunction);
+				break;
+			case "ASSISTS":
+			case "assists":
+				result?.sort(assistsSortFunction);
+				break;
+			case "REBOUNDS":
+			case "rebounds":
+				result?.sort(reboundSortFunction);
+				break;
+			case "blocks":
+			case "BLOCKS":
+				result?.sort(blockSortFunction);
+				break;
+			case "LOSS":
+			case "loss":
+			case "losses":
+			case "Losses":
+			case "Loss":
+				result?.sort(lossSortFunction);
+				break;
+			case "3pts":
+			case "3 points":
+			case "3points":
+			case "Three Points":
+			case "threePoints":
+				result?.sort(threePointsMadeSortFunction);
+				break;
+
+			default:
+				break;
+		}
+		// ERROR CHECK
+		if (result == undefined) {
+			res.status(404).json(ERROR_MESSAGE);
+		}
+		// RETURN SORTED RESULTS
+		res.status(200).json(result);
+	}
+	// else if(){}
+	//
+	// FILTER OR SORT
+	// FILTER BY NAME
+	else if (req.query.name) {
 		let param = req.query.name as string;
-		let result = dbPlayers?.filter((player: IPlayer) => {
+		let result = dbPlayers?.filter((player: IPlayer | WithId<Document>) => {
 			return player.name.toLowerCase().includes(param.toLowerCase());
 		});
 		if (result == undefined) {
@@ -36,11 +221,11 @@ router.get("/", async (req: Request, res: Response) => {
 		res.status(200).json(result);
 
 		//
-		// QUERY BY TEAM
+		// FILTER BY TEAM
 	} else if (req.query.team) {
 		let param = req.query.team as string;
-		let result = dbPlayers?.filter((player: IPlayer) => {
-			return player.team.toLowerCase() == param.toLowerCase();
+		let result = dbPlayers?.filter((player: WithId<Document> | IPlayer) => {
+			return player.team?.toLowerCase() == param.toLowerCase();
 		});
 		if (result == undefined) {
 			res.status(404).json(ERROR_MESSAGE);
@@ -48,11 +233,11 @@ router.get("/", async (req: Request, res: Response) => {
 		res.status(200).json(result);
 
 		//
-		// QUERY BY AGE
+		// FILTER BY AGE
 	} else if (req.query.age) {
 		let param = req.query.age as string;
-		let result = dbPlayers?.filter((player: IPlayer) => {
-			return player.age.toLowerCase() == param.toLowerCase();
+		let result = dbPlayers?.filter((player: WithId<Document>) => {
+			return player.age?.toLowerCase() == param.toLowerCase();
 		});
 		if (result == undefined) {
 			res.status(404).json(ERROR_MESSAGE);
@@ -60,13 +245,40 @@ router.get("/", async (req: Request, res: Response) => {
 		res.status(200).json(result);
 
 		//
-		// RETURN ALL PLAYERS
+		// SORT PLAYERS BY THE GIVEN SORT QUERY
+	} else if (req.query.sort) {
+		let param = req.query.sort as string;
+		let result;
+		switch (param) {
+			case "age":
+			case "Age":
+			case "AGE":
+				result = dbPlayers?.sort(ageSortFunction);
+				break;
+			case "wins":
+			case "Wins":
+			case "WINS":
+				result = dbPlayers?.sort(winSortFunction);
+				break;
+
+			default:
+				break;
+		}
+		if (result == undefined) {
+			res.status(404).json(ERROR_MESSAGE);
+		}
+		res.status(200).json(result);
+
+		//
+		// RETURN ALL PLAYERS SORTED BY NAME
 	} else {
 		let result = await getAllDBItems();
-		res.status(200).json(result?.allPlayers.sort(nameSortFunction));
+		res.status(200).json(result?.allPlayers?.sort(nameSortFunction));
 	}
 });
 
+//
+// GET TOP FIFTY
 router.get("/topfifty", async (req: Request, res: Response) => {
 	// GET ALL ITEMS FROM THE DB
 	let dbItems = await getAllDBItems();
@@ -77,7 +289,7 @@ router.get("/topfifty", async (req: Request, res: Response) => {
 	// CHECK QUERY PARAMS AND FILTER RESULTS ACCORDINGLY
 	if (req.query.filter) {
 		let query = req.query.filter;
-		let filteredResult: IPlayer[] = [];
+		let filteredResult: WithId<Document>[] | IPlayer[] = [];
 		switch (query) {
 			case "win":
 			case "wins":
@@ -94,7 +306,7 @@ router.get("/topfifty", async (req: Request, res: Response) => {
 				filteredResult = result?.sort(threePointsMadeSortFunction).slice(0, 50);
 				break;
 			case "assists":
-				filteredResult = result?.sort(assistSortFunction).slice(0, 50);
+				filteredResult = result?.sort(assistsSortFunction).slice(0, 50);
 				break;
 			case "rebounds":
 				filteredResult = result?.sort(reboundSortFunction).slice(0, 50);
@@ -121,7 +333,7 @@ router.get("/topten", async (req: Request, res: Response) => {
 	// CHECK QUERY PARAMS AND FILTER RESULTS ACCORDINGLY
 	if (req.query.filter) {
 		let query = req.query.filter;
-		let filteredResult: IPlayer[] = [];
+		let filteredResult: WithId<Document>[] = [];
 		switch (query) {
 			case "win":
 			case "wins":
@@ -138,7 +350,7 @@ router.get("/topten", async (req: Request, res: Response) => {
 				filteredResult = result?.sort(threePointsMadeSortFunction);
 				break;
 			case "assists":
-				filteredResult = result?.sort(assistSortFunction);
+				filteredResult = result?.sort(assistsSortFunction);
 				break;
 			case "rebounds":
 				filteredResult = result?.sort(reboundSortFunction);
