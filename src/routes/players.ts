@@ -27,8 +27,8 @@ router.get("/", async (req: Request, res: Response) => {
 	// QUERY BY NAME
 	if (req.query.name) {
 		let param = req.query.name as string;
-		let result = dbPlayers?.find((player: IPlayer) => {
-			return player.name.toLowerCase() == param.toLowerCase();
+		let result = dbPlayers?.filter((player: IPlayer) => {
+			return player.name.toLowerCase().includes(param.toLowerCase());
 		});
 		if (result == undefined) {
 			res.status(404).json(ERROR_MESSAGE);
@@ -63,15 +63,7 @@ router.get("/", async (req: Request, res: Response) => {
 		// RETURN ALL PLAYERS
 	} else {
 		let result = await getAllDBItems();
-		res.status(200).json(
-			result?.allPlayers.sort((a, b) => {
-				if (a.name > b.name) {
-					return 1;
-				} else {
-					return -1;
-				}
-			})
-		);
+		res.status(200).json(result?.allPlayers.sort(nameSortFunction));
 	}
 });
 

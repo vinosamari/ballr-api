@@ -1,9 +1,8 @@
 import { TeamModel } from "../Models/Team";
 import { PlayerModel } from "../Models/Player";
 import { connect } from "mongoose";
-import { TeamOrPlayerArray, SortOperatorType, TeamOrPlayerType } from "./types";
+import { SortOperatorType, TeamOrPlayerType } from "./types";
 import LOGGER from "./logger";
-import { IPlayer, ITeam } from "./interfaces";
 require("dotenv").config();
 
 let namespace = "DB";
@@ -70,10 +69,10 @@ export async function createDBItem(
 	LOGGER.INFO(namespace, "Creating new document..");
 	try {
 		if (addOperator == "team") {
-			TeamModel.create(item);
+			TeamModel.insertMany(item);
 			LOGGER.INFO(namespace, `Added ${item.name} to db..`);
 		} else {
-			PlayerModel.create(item);
+			PlayerModel.insertMany(item);
 			LOGGER.INFO(namespace, `Added ${item.name} to db..`);
 		}
 		return;

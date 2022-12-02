@@ -1,17 +1,23 @@
 const express = require("express");
 const app = express();
-import { Request, Response } from "express";
+import { connection } from "mongoose";
+import { Request, Response, NextFunction } from "express";
 const { CONFIG } = require("./config/config");
 const PORT = CONFIG.port;
+// ROUTES
 const teams = require("./routes/teams");
 const players = require("./routes/players");
+// UTILITIES AND HELPER FUNCTIONS
 import { connectToDB } from "./utilities/db";
 import { pushPlayersToDb, pushTeamsToDb } from "./utilities/helpers";
 import LOGGER from "./utilities/logger";
 
+// EXPRESS ROUTE MAPPING
 app.use("/teams", teams);
 app.use("/players", players);
 
+//
+// HOME ROUTE. 'LANDING PAGE'
 app.get("/", (req: Request, res: Response) => {
 	let allRoutes = {
 		//
@@ -47,14 +53,73 @@ app.get("/", (req: Request, res: Response) => {
 	res.json(allRoutes);
 });
 
-app.get("/updatedb", (req: Request, res: Response) => {
-	pushTeamsToDb();
-	pushPlayersToDb();
-	res.json({
-		status: "SUCCESS",
-		message: "Pushed fresh content to db",
-	});
-});
+// THESE ROUTES MANUALLY UPDATE THE DATABASE WITH THE DATA FROM THE players AND teams SCRAPED DATA JSON FILES
+// #TODO MAKE THE ROUTES POST AND PARRY THE DATA SENT TO THEM (OR IT) TO THE APPROPRIATE COLLECTION IN THE DATABASE
+//
+// UPDATE PLAYERS
+
+app.post(
+	"/update-players",
+	//
+	// MIDDLEWARE FOR DB HOUSEKEEPING
+	async (req: Request, res: Response, next: NextFunction) => {
+		//
+		// CHECK IF COLLECTION EXIST AND DROP THEM
+		const collections = await connection.db.listCollections().toArray();
+		if (players !== undefined) {
+			collections.forEach(async (collection) => {
+				if (collection.name == "players") {
+					await connection.db.dropCollection("players");
+				}
+			});
+			LOGGER.SUCCESS("SERVER", "DROPPED COLLECTIONS. MOVING ON...");
+			next();
+		} else {
+			LOGGER.INFO("SERVER", "NO COLLECTIONS FOUND. MOVING ON...");
+			next();
+		}
+	},
+	(req: Request, res: Response) => {
+		pushPlayersToDb();
+		res.json({
+			status: "SUCCESS",
+			message: "Pushed new players content to db",
+		});
+	}
+);
+
+//
+// UPDATE TEAMS
+
+app.post(
+	"/update-teams",
+	//
+	// MIDDLEWARE FOR DB HOUSEKEEPING
+	async (req: Request, res: Response, next: NextFunction) => {
+		//
+		// CHECK IF COLLECTIONS EXIST AND DROP THEM
+		const collections = await connection.db.listCollections().toArray();
+		if (teams !== undefined) {
+			collections.forEach(async (collection) => {
+				if (collection.name == "teams") {
+					await connection.db.dropCollection("teams");
+				}
+			});
+			LOGGER.SUCCESS("SERVER", "DROPPED COLLECTIONS. MOVING ON...");
+			next();
+		} else {
+			LOGGER.INFO("SERVER", "NO COLLECTIONS FOUND. MOVING ON...");
+			next();
+		}
+	},
+	(req: Request, res: Response) => {
+		pushTeamsToDb();
+		res.json({
+			status: "SUCCESS",
+			message: "Pushed new teams info to db",
+		});
+	}
+);
 
 app.listen(PORT, async () => {
 	connectToDB();
