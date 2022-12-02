@@ -1,34 +1,43 @@
 import { TeamModel } from "../Models/Team";
 import { PlayerModel } from "../Models/Player";
-import { connect } from "mongoose";
 import { SortOperatorType, TeamOrPlayerType } from "./types";
 import LOGGER from "./logger";
+import { MongoClient, Collection, Document, WithId } from "mongodb";
+import { IPlayer, ITeam } from "./interfaces";
 require("dotenv").config();
 
+// FOR LOGGING
 let namespace = "DB";
+
+//
 // CONNECT TO DATABASE
+export const dbCollections: { teams?: Collection; players?: Collection } = {};
 export async function connectToDB() {
-	LOGGER.INFO(namespace, "Connecting to db..");
+	// CONNECTION URIs
+	const productionURI = `mongodb+srv://${process.env.MONGODB_DB_USERNAME}:${process.env.MONGODB_DB_PASS}@${process.env.MONGODB_DB_PROD_DB_NAME}.q6zs1bc.mongodb.net/ballrDb?retryWrites=true&w=majority`;
+	//
+	const devURI = `mongodb://${process.env.MONGO_DB_DEV_HOST}:${process.env.MONGODB_DB_PORT}/${process.env.MONGODB_DB_DEV_DB_NAME}`;
+
+	//
+	// Create a new MongoClient
+	const client: MongoClient =
+		process.env.ENV == "development"
+			? new MongoClient(devURI)
+			: new MongoClient(productionURI);
+	//
 	try {
-		if (process.env.ENV == "development") {
-			await connect(
-				`mongodb://${process.env.MONGO_DB_HOST}:${process.env.MONGODB_DB_PORT}/${process.env.MONGODB_DB_NAME}`
-			);
-		} else {
-			await connect(
-				`mongodb+srv://sapwavino:blackbeat@ballr-api.q6zs1bc.mongodb.net/ballrDb?retryWrites=true&w=majority`
-			);
-		}
-		LOGGER.INFO(
-			namespace,
-			`Connected to ${
-				process.env.ENV == "development"
-					? "testDb"
-					: process.env.MONGODB_DB_NAME
-			}!`
-		);
-	} catch (error) {
-		LOGGER.ERROR(namespace, error);
+		// Establish and verify connection
+		await client.connect();
+		let dbName =
+			process.env.ENV == "development"
+				? process.env.MONGODB_DB_DEV_DB_NAME
+				: process.env.MONGODB_DB_PROD_DB_NAME;
+		const db = await client.db(dbName);
+		dbCollections.teams = db.collection("teams");
+		dbCollections.players = db.collection("players");
+		LOGGER.SUCCESS(namespace, `Connected successfully to ${dbName}!`);
+	} catch (e) {
+		LOGGER.ERROR(namespace, e as Error);
 	}
 }
 
@@ -36,13 +45,14 @@ export async function connectToDB() {
 export async function getAllDBItems() {
 	LOGGER.INFO(namespace, "Fetching database documents..");
 	try {
-		let allTeams = await TeamModel.find();
-		let allPlayers = await PlayerModel.find();
+		let allTeams = await dbCollections.teams?.find({}).toArray();
+		let allPlayers = await dbCollections.players?.find({}).toArray();
 		return { allTeams, allPlayers };
 	} catch (error) {
 		LOGGER.ERROR(namespace, error);
 	}
 }
+
 export async function getOneDBItem(
 	query: string,
 	SortOperator: SortOperatorType
@@ -50,10 +60,10 @@ export async function getOneDBItem(
 	LOGGER.INFO(namespace, "Fetching database documents..");
 	try {
 		if (SortOperator == "team") {
-			let result = await TeamModel.find({ name: query });
+			let result = await dbCollections.teams?.findOne({ name: query });
 			return { result };
 		} else {
-			let result = await PlayerModel.find({ name: query });
+			let result = await dbCollections.players?.findOne({ name: query });
 			return { result };
 		}
 	} catch (error) {
@@ -61,18 +71,18 @@ export async function getOneDBItem(
 	}
 }
 
-// CREATE DATABASE ITEM
-export async function createDBItem(
-	item: TeamOrPlayerType,
+// CREATE SINGLE DATABASE ITEM
+export async function createOneDBItem(
+	item: WithId<Document> | ITeam | IPlayer,
 	addOperator: SortOperatorType
 ) {
 	LOGGER.INFO(namespace, "Creating new document..");
 	try {
 		if (addOperator == "team") {
-			TeamModel.insertMany(item);
+			dbCollections.teams?.insertOne(item);
 			LOGGER.INFO(namespace, `Added ${item.name} to db..`);
 		} else {
-			PlayerModel.insertMany(item);
+			dbCollections.players?.insertOne(item);
 			LOGGER.INFO(namespace, `Added ${item.name} to db..`);
 		}
 		return;
@@ -81,8 +91,28 @@ export async function createDBItem(
 	}
 }
 
-// UPDATE DATABASE ITEM
-export async function updateDBItem() {}
+// CREATE MULTIPLE DATABASE ITEMS
+export async function createMultipleDBItems(
+	item: [WithId<Document>] | ITeam[] | IPlayer[],
+	addOperator: SortOperatorType
+) {
+	LOGGER.INFO(namespace, "Creating new document..");
+	try {
+		if (addOperator == "team") {
+			dbCollections.teams?.insertMany(item);
+			LOGGER.INFO(namespace, `Added new batch of teams to db..`);
+		} else {
+			dbCollections.players?.insertMany(item);
+			LOGGER.INFO(namespace, `Added new batch of players to db..`);
+		}
+		return;
+	} catch (error) {
+		LOGGER.ERROR(namespace, error);
+	}
+}
 
-// DELETE DATABASE ITEM
-export async function deleteDBItem() {}
+// // UPDATE DATABASE ITEM
+// export async function updateDBItem() {}
+
+// // DELETE DATABASE ITEM
+// export async function deleteDBItem() {}

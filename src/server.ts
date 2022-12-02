@@ -8,8 +8,8 @@ const PORT = CONFIG.port;
 const teams = require("./routes/teams");
 const players = require("./routes/players");
 // UTILITIES AND HELPER FUNCTIONS
-import { connectToDB } from "./utilities/db";
-import { pushPlayersToDb, pushTeamsToDb } from "./utilities/helpers";
+import { connectToDB, getAllDBItems } from "./utilities/db";
+import { pushTeamsToDb, pushPlayersToDb } from "./utilities/helpers";
 import LOGGER from "./utilities/logger";
 
 // EXPRESS ROUTE MAPPING
@@ -60,25 +60,7 @@ app.get("/", (req: Request, res: Response) => {
 
 app.post(
 	"/update-players",
-	//
-	// MIDDLEWARE FOR DB HOUSEKEEPING
-	async (req: Request, res: Response, next: NextFunction) => {
-		//
-		// CHECK IF COLLECTION EXIST AND DROP THEM
-		const collections = await connection.db.listCollections().toArray();
-		if (players !== undefined) {
-			collections.forEach(async (collection) => {
-				if (collection.name == "players") {
-					await connection.db.dropCollection("players");
-				}
-			});
-			LOGGER.SUCCESS("SERVER", "DROPPED COLLECTIONS. MOVING ON...");
-			next();
-		} else {
-			LOGGER.INFO("SERVER", "NO COLLECTIONS FOUND. MOVING ON...");
-			next();
-		}
-	},
+
 	(req: Request, res: Response) => {
 		pushPlayersToDb();
 		res.json({
@@ -95,23 +77,23 @@ app.post(
 	"/update-teams",
 	//
 	// MIDDLEWARE FOR DB HOUSEKEEPING
-	async (req: Request, res: Response, next: NextFunction) => {
-		//
-		// CHECK IF COLLECTIONS EXIST AND DROP THEM
-		const collections = await connection.db.listCollections().toArray();
-		if (teams !== undefined) {
-			collections.forEach(async (collection) => {
-				if (collection.name == "teams") {
-					await connection.db.dropCollection("teams");
-				}
-			});
-			LOGGER.SUCCESS("SERVER", "DROPPED COLLECTIONS. MOVING ON...");
-			next();
-		} else {
-			LOGGER.INFO("SERVER", "NO COLLECTIONS FOUND. MOVING ON...");
-			next();
-		}
-	},
+	// async (req: Request, res: Response, next: NextFunction) => {
+	// 	//
+	// 	// CHECK IF COLLECTIONS EXIST AND DROP THEM
+	// 	const collections = await connection.db.listCollections().toArray();
+	// 	if (teams !== undefined) {
+	// 		collections.forEach(async (collection) => {
+	// 			if (collection.name == "teams") {
+	// 				await connection.db.dropCollection("teams");
+	// 			}
+	// 		});
+	// 		LOGGER.SUCCESS("SERVER", "DROPPED COLLECTIONS. MOVING ON...");
+	// 		next();
+	// 	} else {
+	// 		LOGGER.INFO("SERVER", "NO COLLECTIONS FOUND. MOVING ON...");
+	// 		next();
+	// 	}
+	// },
 	(req: Request, res: Response) => {
 		pushTeamsToDb();
 		res.json({
